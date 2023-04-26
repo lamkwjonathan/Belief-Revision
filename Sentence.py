@@ -5,36 +5,17 @@ class Sentence:
     def __init__(self, rawText):
         self.rawText = rawText
         self.symbols = []
-        self.sentence = None
-        self.makeNewSentence(self.rawText)
-
-    '''
-    def makeNewSentence(self, rawText):
-        text = rawText.replace(" ", "")
-        for c in range(len(text)):
-            if text[c] == "(":
-                for z in range(len(text)-1, -1, -1):
-                    if text[z] == ")":
-                        return self.makeNewSentence(text[c:z]) # And(x, y) (x, y, &)
-        textList = text.split(",")
-        if len(textList) < 2:
-            return self.makeUnitSentence(textList[0], textList[1])
-        elif len(textList) < 3:
-            return self.makeUnitSentence(textList[0], textList[1], textList[2])
-        else:
-            raise Exception("Invalid sentence structure: too many arguments!")
-    '''
+        self.sentence = self.makeNewSentence(self.rawText)
 
     def makeNewSentence(self, rawText):
-        # ((x, y, |), (z, ~), &)
         text = rawText.replace(" ", "")
-        # ((x,y,|),(z,~),&)
+        print(text)
         text = self.stripBracket(text)
-        # (x,y,|),(z,~),&
+        print(text)
         argsList = self.splitArgs(text)
-        # [(x,y,|), (z,~), &]
+        print(argsList)
         
-        if len(argsList) >= 3:
+        if len(argsList) > 3:
             raise Exception("Invalid sentence structure: too many arguments!")
 
         operand = argsList[-1]
@@ -48,7 +29,7 @@ class Sentence:
             if text[c] == "(":
                 for z in range(len(text)-1, -1, -1):
                     if text[z] == ")":
-                        return text[c:z]
+                        return text[c+1:z]
                     
     def splitArgs(self, text):
         argsList = []
@@ -61,27 +42,27 @@ class Sentence:
 
         for i in range(len(text)):
             if argStartFlag == 1:
-                if text[i] != "(":
-                    startIndex = i
+                startIndex = i
+                if text[i] == ",":
+                    pass
+                elif text[i] != "(":
                     j = i
-                    while text[j] != ",":
+                    while j < len(text) and text[j] != ",":
                         j += 1
                     endIndex = j
-                    argsList.append(text[startIndex, endIndex])
+                    argsList.append(text[startIndex:endIndex])
                     startIndex = 0
                     endIndex = 0
-                    i += 1
                 else:
                     argStartFlag = 0
             
             if text[i] == "(":
                 openBracketCount += 1
-                startIndex = i
             elif text[i] == ")":
                 closeBracketCount += 1
                 endIndex = i+1
-            if openBracketCount == closeBracketCount:
-                argsList.append(text[startIndex, endIndex])
+            if openBracketCount == closeBracketCount and openBracketCount != 0:
+                argsList.append(text[startIndex:endIndex])
                 openBracketCount = 0
                 closeBracketCount = 0
                 i += 1
@@ -93,18 +74,40 @@ class Sentence:
         try:
             operand = args[-1]
             args1 = args[0]
+
+            if args1[0] == "(":
+                    args1 = self.stripBracket(args1)
+                    args1List = self.splitArgs(args1)
+                    if args1[-1] != "~":
+                        args1 = self.makeUnitSentence(args1List[0], args1List[1], args1List[-1])
+                    else:
+                        args1 = self.makeUnitSentence(args1List[0], args1List[-1])
+
             if len(args) > 2:
                 args2 = args[1]
             
-                if args1[0] != "(" and args2[0] != "(":
-                    if operand == "&":
-                        return And(Symbol(args[0]), Symbol(args[1]))
-                    elif operand == "|":
-                        return Or(Symbol(args[0]), Symbol(args[1]))
-                    elif operand == ">>":
-                        return Implies(Symbol(args[0]), Symbol(args[1]))    
-                elif args1[0] == "(" and args2[0] != "(":
-                    pass
+                if args2[0] == "(":
+                    args2 = self.stripBracket(args2)
+                    args2List = self.splitArgs(args2)
+                    print(args2List)
+                    if args2[-1] != "~":
+                        args2 = self.makeUnitSentence(args2List[0], args2List[1], args2List[-1])
+                        print("Args2:", args2)
+                    else:
+                        args2 = self.makeUnitSentence(args2List[0], args2List[-1])
+                if type(args1) != Or and type(args1) != And and type(args1) != Not and type(args1) != Implies and type(args1) != Symbol:
+                    args1 = Symbol(args1)
+                if type(args2) != Or and type(args2) != And and type(args2) != Not and type(args2) != Implies and type(args2) != Symbol:
+                    args2 = Symbol(args2)
+                if operand == "&":
+                    return And(args1, args2)
+                elif operand == "|":
+                    return Or(args1, args2)
+                elif operand == ">":
+                    return Implies(args1, args2)    
+            
+            if operand == "~":
+                return Not(args1)
 
         except:
             print("Invalid sentence structure!")
@@ -114,7 +117,7 @@ class Sentence:
             return True
         elif item == "|":
             return True
-        elif item == ">>":
+        elif item == ">":
             return True
         else:
             return False

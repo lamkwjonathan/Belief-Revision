@@ -1,4 +1,4 @@
-import Sentence
+from Sentence import Sentence
 
 # Implement Command class
 class Command:
@@ -10,8 +10,9 @@ class Command:
 
     def check(self, rawText, beliefBase):
         sentence = Sentence(rawText)
-        isContradiction = beliefBase.check(sentence)
-        return isContradiction
+        print("sentence:", sentence.sentence)
+        #isContradiction = beliefBase.check(sentence)
+        #return isContradiction
 
     def add(self, rawText, beliefBase):
         '''
