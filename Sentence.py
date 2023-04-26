@@ -112,6 +112,7 @@ class Sentence:
         except:
             print("Invalid sentence structure!")
 
+    '''
     def isOperand(self, item):
         if item == "&":
             return True
@@ -121,5 +122,5 @@ class Sentence:
             return True
         else:
             return False
-        
+    '''
     
