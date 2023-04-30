@@ -9,11 +9,13 @@ class Sentence:
 
     def makeNewSentence(self, rawText):
         text = rawText.replace(" ", "")
-        print(text)
+        if text[0] != "(": # Single variable entered
+            return Symbol(text)
+        #print(text)
         text = self.stripBracket(text)
-        print(text)
+        #print(text)
         argsList = self.splitArgs(text)
-        print(argsList)
+        #print(argsList)
         
         if len(argsList) > 3:
             raise Exception("Invalid sentence structure: too many arguments!")
@@ -89,10 +91,8 @@ class Sentence:
                 if args2[0] == "(":
                     args2 = self.stripBracket(args2)
                     args2List = self.splitArgs(args2)
-                    print(args2List)
                     if args2[-1] != "~":
                         args2 = self.makeUnitSentence(args2List[0], args2List[1], args2List[-1])
-                        print("Args2:", args2)
                     else:
                         args2 = self.makeUnitSentence(args2List[0], args2List[-1])
                 if type(args1) != Or and type(args1) != And and type(args1) != Not and type(args1) != Implies and type(args1) != Symbol:

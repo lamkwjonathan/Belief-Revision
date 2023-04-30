@@ -1,12 +1,10 @@
 from sympy import *
 from BeliefBase import BeliefBase
 from Command import Command
-
-MAXMEM = 1000
     
 def parse(userInput, command, beliefBase, notProgramEnded):
     userInputList = userInput.split(": ")
-    print(userInputList)
+    #print(userInputList)
     if userInputList[0] == 'end':
         return command.end(notProgramEnded)
     elif userInputList[0] == 'check':
@@ -17,7 +15,7 @@ def parse(userInput, command, beliefBase, notProgramEnded):
 if __name__ == "__main__":
     notProgramEnded = True
     
-    bb = BeliefBase(MAXMEM)
+    bb = BeliefBase()
     command = Command()
 
     print("Belief Revision Agent")
@@ -31,15 +29,14 @@ if __name__ == "__main__":
     print("Only 2 symbols are allowed in each set of brackets. Multiple and/or chains can be created by nesting brackets:")
     print("((x, y, |), z, |)")
     print("---Commands---")
-    print("check    :    (y, (a, b, |), |) -- for checking for contradictions (does not add to the belif base)")
+    print("check    :    (y, (a, b, |), |) -- for checking for contradictions (does not add to the belief base)")
     print("add      :    ((x, y, &), ~) -- for adding new sentences to the belief base")
     print("end      :    for ending the program")
 
 
     while notProgramEnded:
         userInput = input()
-        parse(userInput, command, notProgramEnded, bb)
-    
+        parse(userInput, command, bb, notProgramEnded)
     print("Program ended")
 
     

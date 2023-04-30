@@ -11,8 +11,11 @@ class Command:
     def check(self, rawText, beliefBase):
         sentence = Sentence(rawText)
         print("sentence:", sentence.sentence)
-        #isContradiction = beliefBase.check(sentence)
-        #return isContradiction
+        isContradiction = beliefBase.check(sentence)
+        if isContradiction:
+            print(str(sentence.sentence) + " contradicts with belief base!")
+        else:
+            print(str(sentence.sentence) + " doesn't contradict with belief base!")
 
     def add(self, rawText, beliefBase):
         '''
