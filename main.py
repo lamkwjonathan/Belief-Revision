@@ -3,8 +3,7 @@ from BeliefBase import BeliefBase
 from Command import Command
     
 def parse(userInput, command, beliefBase, notProgramEnded):
-    userInputList = userInput.split(": ")
-    #print(userInputList)
+    userInputList = userInput.replace(" ","").split(":")
     if userInputList[0] == 'end':
         return command.end(notProgramEnded)
     elif userInputList[0] == 'check':

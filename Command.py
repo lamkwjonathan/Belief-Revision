@@ -10,7 +10,8 @@ class Command:
 
     def check(self, rawText, beliefBase):
         sentence = Sentence(rawText)
-        print("sentence:", sentence.sentence)
+        print("")
+        print("Check sentence:", sentence.sentence)
         isContradiction = beliefBase.check(sentence)
         if isContradiction:
             print(str(sentence.sentence) + " contradicts with belief base!")
@@ -26,8 +27,17 @@ class Command:
         ##Question: how do we surface all the possible resolutions to choose the best one based on our priority?
         '''
         sentence = Sentence(rawText)
+        print("")
+        print("Add sentence:", sentence.sentence)
         isContradiction = beliefBase.check(sentence)
         if isContradiction:
-            beliefBase.resolve(sentence)
+            print(str(sentence.sentence) + " contradicts with belief base!")
+            print("Old Belief Base:")
+            print(beliefBase.base)
+            beliefBase.uncontradict(sentence)
+        else:
+            print(str(sentence.sentence) + " doesn't contradict with belief base!")
         beliefBase.add(sentence)
+        print("New Belief Base:")
+        print(beliefBase.base)
         
