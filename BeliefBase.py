@@ -7,14 +7,13 @@ class BeliefBase:
     """
     def __init__(self):
         self.base = []
-        self.baseIndex = 0
-        self.symbolDict = {}
-        self.base.append(Symbol("x"))
-        self.base.append(Implies(Symbol("y"), Symbol("z")))
-        self.base.append(Symbol("y"))
-        self.base.append(Or(Symbol("x"), Symbol("a"), Symbol("b")))
-        self.base.append(Not(Symbol("a")))
-        self.base.append(Not(Symbol("b")))
+        #self.base.append(Symbol("x"))
+        #self.base.append(Symbol("y"))
+        #self.base.append(Or(Symbol("x"), Symbol("a"), Symbol("b")))
+        #self.base.append(Not(Symbol("a")))
+        #self.base.append(Not(Symbol("b")))
+        #self.base.append(Equivalent(Symbol("z"), Symbol("y")))
+        #self.base.append(Symbol("y"))
     
     def check(self, sentence):
         """
@@ -24,11 +23,18 @@ class BeliefBase:
         new = FiniteSet()
 
         # Perform preliminary check whether sentence is already in the belief base
+        isNewSymbol = True
         for s in self.base:
             if s == sentence.sentence:
                 print(str(sentence.sentence) + " already in belief base!")
                 return False
-            
+            for sym in [*sentence.sentence.atoms(Symbol)]:
+                if sym in [*s.atoms(Symbol)]:
+                    isNewSymbol = False
+                    break
+        if isNewSymbol:
+            return False
+
         # Convert sentences in the belief base into CNF form and add them to the set of clauses
         for i in range(len(self.base)):
             clauseCNF = to_cnf(self.base[i])
@@ -51,6 +57,7 @@ class BeliefBase:
             for i in clauses:
                 isAlreadyChecked = False # Flag for skipping clauses that have already been resolved together
                 for j in clauses:
+                    print("i: ", i, "|  j: ", j)
                     if i == j:
                         isAlreadyChecked = False
                         continue
@@ -127,11 +134,11 @@ class BeliefBase:
         Takes in a sentence in CNF form and separates the clauses out by splitting along &.
         Returns a list of clauses.
         """
-        clauseStr = str(clauseCNF)
-        if clauseStr.find('&') == -1:
-            return [clauseCNF]
+        clauseStr = str(clauseCNF).replace(" ","")
+        if clauseStr.find("&") == -1:
+            return [clauseStr]
         else:
-            clauseList = clauseStr.replace(" ","").split("&")
+            clauseList = clauseStr.split("&")
             return clauseList
         
     def separateClauseByOr(self, clauseCNF):
@@ -139,7 +146,11 @@ class BeliefBase:
         Takes in a CNF clause and separates it by |.
         Returns a list of symbols.
         """
-        clauseList = str(clauseCNF).replace(" ","").split("|")
+        clauseStr = str(clauseCNF).replace(" ","")
+        if clauseStr.find("|") == -1:
+            return [clauseStr]
+        else:
+            clauseList = clauseStr.split("|")
         return clauseList
 
     def remove(self, sentence):
@@ -178,6 +189,7 @@ class BeliefBase:
             for i in clauses:
                 isAlreadyChecked = False
                 for j in clauses:
+                    print("i: ", i, "|  j: ", j)
                     if i == j:
                         isAlreadyChecked = False
                         continue

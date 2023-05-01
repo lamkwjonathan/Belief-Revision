@@ -30,6 +30,7 @@ class Command:
         sentence = Sentence(rawText)
         print("")
         print("Check sentence:", sentence.sentence)
+        print("Checking... might take a few moments...")
         isContradiction = beliefBase.check(sentence)
         if isContradiction:
             print(str(sentence.sentence) + " contradicts with belief base!")
@@ -46,12 +47,13 @@ class Command:
         sentence = Sentence(rawText)
         print("")
         print("Add sentence:", sentence.sentence)
+        print("Checking... might take a few moments...")
         isContradiction = beliefBase.check(sentence)
         if isContradiction:
             print(str(sentence.sentence) + " contradicts with belief base!")
             print("Old Belief Base:")
             print(beliefBase.base)
-            print("Resolving... might take a few moments...")
+            print("Resolving... might take a few minutes...")
             beliefBase.uncontradict(sentence)
         else:
             print(str(sentence.sentence) + " doesn't contradict with belief base!")

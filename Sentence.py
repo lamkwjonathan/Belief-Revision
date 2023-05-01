@@ -120,6 +120,8 @@ class Sentence:
                     return Or(args1, args2)
                 elif operand == ">":
                     return Implies(args1, args2)    
+                elif operand == "=":
+                    return Equivalent(args1, args2)
             
             if operand == "~":
                 return Not(args1)
