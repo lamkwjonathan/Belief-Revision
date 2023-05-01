@@ -2,12 +2,18 @@ from sympy import *
 
 # Implement Sentence Class that strips a string input into its symbols and commands
 class Sentence:
+    """
+    Class for transforming and storing user input into sympy logic form.
+    """
     def __init__(self, rawText):
         self.rawText = rawText
         self.symbols = []
         self.sentence = self.makeNewSentence(self.rawText)
 
     def makeNewSentence(self, rawText):
+        """
+        Takes in a string and transforms it into sympy form.
+        """
         text = rawText.replace(" ", "")
         if text[0] != "(": # Single variable entered
             return Symbol(text)
@@ -27,6 +33,9 @@ class Sentence:
             return self.makeUnitSentence(argsList[0], argsList[1], argsList[2])
         
     def stripBracket(self, text):
+        """
+        Removes one layer of brackets from a user input string
+        """
         for c in range(len(text)):
             if text[c] == "(":
                 for z in range(len(text)-1, -1, -1):
@@ -34,6 +43,9 @@ class Sentence:
                         return text[c+1:z]
                     
     def splitArgs(self, text):
+        """
+        Splits a string along commas, taking into account brackets that demarcate clauses that have to stay together.
+        """
         argsList = []
 
         startIndex = 0
@@ -73,6 +85,9 @@ class Sentence:
         return argsList
 
     def makeUnitSentence(self, *args): 
+        """
+        Recursive function that applies sympy logic functions to the user input in the correct order to create a sympy logical expression.
+        """
         try:
             operand = args[-1]
             args1 = args[0]
@@ -112,15 +127,4 @@ class Sentence:
         except:
             print("Invalid sentence structure!")
 
-    '''
-    def isOperand(self, item):
-        if item == "&":
-            return True
-        elif item == "|":
-            return True
-        elif item == ">":
-            return True
-        else:
-            return False
-    '''
     
