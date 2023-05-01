@@ -1,8 +1,10 @@
 from sympy import *
-import Sentence
 
 # Implement BeliefBase class
 class BeliefBase:
+    """
+    Class for belief base and its methods.
+    """
     def __init__(self):
         self.base = []
         self.baseIndex = 0
@@ -15,8 +17,19 @@ class BeliefBase:
         self.base.append(Not(Symbol("b")))
     
     def check(self, sentence):
+        """
+        Checks contradiction using the CNF-resolution method.
+        """
         clauses = FiniteSet()
         new = FiniteSet()
+
+        # Perform preliminary check whether sentence is already in the belief base
+        for s in self.base:
+            if s == sentence.sentence:
+                print(str(sentence.sentence) + " already in belief base!")
+                return False
+            
+        # Convert sentences in the belief base into CNF form and add them to the set of clauses
         for i in range(len(self.base)):
             clauseCNF = to_cnf(self.base[i])
             clauseCNFSplitStr = self.separateClauseByAnd(clauseCNF)
@@ -24,15 +37,25 @@ class BeliefBase:
                 clauseCNFSplit = self.makeClauseFromCNFStr(self.separateClauseByOr(subclause))
                 clauseCNFSet = FiniteSet(clauseCNFSplit)
                 clauses = Union(clauses, clauseCNFSet)
+        
+        # Convert user input sentence into CNF form and add it to the set of clauses
         sentenceCNF = to_cnf(sentence.sentence)
         sentenceCNFSplitStr = self.separateClauseByAnd(sentenceCNF)
         for subclause in sentenceCNFSplitStr:
             sentenceCNFSplit = self.makeClauseFromCNFStr(self.separateClauseByOr(subclause))
             sentenceCNFSet = FiniteSet(sentenceCNFSplit)
             clauses = Union(clauses, sentenceCNFSet)
+
+        # Resolve each pair of clauses together until there is an empty set (contradiction) or no more clauses left (no contradiction)
         while True:
             for i in clauses:
+                isAlreadyChecked = False # Flag for skipping clauses that have already been resolved together
                 for j in clauses:
+                    if i == j:
+                        isAlreadyChecked = False
+                        continue
+                    if isAlreadyChecked:
+                        continue
                     resolvedClause = self.resolve(i, j)
                     if resolvedClause == None:
                         return True
@@ -43,6 +66,10 @@ class BeliefBase:
             clauses = Union(clauses, new)
     
     def resolve(self, clause1, clause2):
+        """
+        Resolves two CNF clauses together by removing complementary pairs.
+        Returns a resolved clause in smypy form.
+        """
         mergedClause = Or(clause1, clause2)
         mergedList = str(mergedClause).replace(" ", "").split("|")
         resolvedList = self.resolveSymbolsFromList(mergedList)
@@ -50,12 +77,18 @@ class BeliefBase:
         return resolvedClause
     
     def makeClauseFromCNFStr(self, clauseList):
+        """
+        Takes in a list of symbols separated by commas and returns a CNF clause separated by |
+        """
         clause = None
+        # Convert symbols to sympy form
         for c in range(len(clauseList)):
             if clauseList[c][0] == "~":
                 clauseList[c] = Not(Symbol(clauseList[c][1:]))
             else:
                 clauseList[c] = Symbol(clauseList[c])
+        
+        # Create CNF form clause via Or() statements 
         if len(clauseList) == 1:
             clause = clauseList[0]
         else:
@@ -69,6 +102,9 @@ class BeliefBase:
         return clause
 
     def resolveSymbolsFromList(self, symList):
+        """
+        Takes in a list of symbols and returns a list of symbols with complementary symbols removed
+        """
         resolvedList = []
         for s in symList:
             contradict = False
@@ -87,6 +123,10 @@ class BeliefBase:
         return resolvedList
     
     def separateClauseByAnd(self, clauseCNF):
+        """
+        Takes in a sentence in CNF form and separates the clauses out by splitting along &.
+        Returns a list of clauses.
+        """
         clauseStr = str(clauseCNF)
         if clauseStr.find('&') == -1:
             return [clauseCNF]
@@ -95,13 +135,24 @@ class BeliefBase:
             return clauseList
         
     def separateClauseByOr(self, clauseCNF):
+        """
+        Takes in a CNF clause and separates it by |.
+        Returns a list of symbols.
+        """
         clauseList = str(clauseCNF).replace(" ","").split("|")
         return clauseList
 
     def remove(self, sentence):
+        """
+        Removes contradiction using a variation of the CNF-resolution method.
+        Every time an empty clause is obtained, one of the original offending clauses that caused it are removed.
+        The removed clause is determined by the heuristic function.
+        """
         clauses = FiniteSet()
         clauseTracker = {} # for tracking clauses back to their sentences
         new = FiniteSet()
+
+        # Convert sentences in the belief base into CNF form and add them to the set of clauses
         for i in range(len(self.base)):
             clauseCNF = to_cnf(self.base[i])
             clauseCNFSplitStr = self.separateClauseByAnd(clauseCNF)
@@ -109,13 +160,20 @@ class BeliefBase:
                 clauseCNFSplit = self.makeClauseFromCNFStr(self.separateClauseByOr(subclause))
                 clauseCNFSet = FiniteSet(clauseCNFSplit)
                 clauses = Union(clauses, clauseCNFSet)
-                clauseTracker[clauseCNFSplit] = [i]
+                clauseTracker[clauseCNFSplit] = [i] # stores location of sentence in the belief base in a dictionary
+        
+        # Convert user input sentence into CNF form and add them to the set of clauses
         sentenceCNF = to_cnf(sentence.sentence)
         sentenceCNFSplitStr = self.separateClauseByAnd(sentenceCNF)
         for subclause in sentenceCNFSplitStr:
             sentenceCNFSplit = self.makeClauseFromCNFStr(self.separateClauseByOr(subclause))
             sentenceCNFSet = FiniteSet(sentenceCNFSplit)
             clauses = Union(clauses, sentenceCNFSet)
+            clauseTracker[sentenceCNFSplit] = [-1] # stores value of -1 as a flag in the dictionary
+        
+        # Perform resolution for each pair of clauses. 
+        # Every time a new clause is created and added to the clauses set, a corresponding key-value pair is added to the clauseTracker
+        # to store the indexes of the sentences that formed the new clause.
         while True:
             for i in clauses:
                 isAlreadyChecked = False
@@ -125,12 +183,11 @@ class BeliefBase:
                         continue
                     if isAlreadyChecked:
                         continue
-                    clause1IndexList = [] if i == sentence.sentence else clauseTracker[i]
-                    clause2IndexList = [] if j == sentence.sentence else clauseTracker[j]
+                    clause1IndexList = clauseTracker[i]
+                    clause2IndexList = clauseTracker[j]
                     resolvedClause = self.resolve(i, j)
                     if resolvedClause == None:
-                        removedClause = self.heuristic(i, j, sentence) # change this
-                        removedIndexList = clauseTracker[removedClause]
+                        removedIndexList = [*set(clause1IndexList + clause2IndexList)]
                         removedIndexTraced = self.traceHeuristic(removedIndexList)
                         self.base.remove(self.base[removedIndexTraced])
                         return True
@@ -142,37 +199,34 @@ class BeliefBase:
             clauses = Union(clauses, new)
 
     def uncontradict(self, sentence):
+        """
+        Loop function to keep running the remove method until no more contradictions exist in the belief base.
+        """
         isContradiction = True
         while isContradiction:
             isContradiction = self.remove(sentence)
     
     def traceHeuristic(self, indexList):
-        max = 0
+        """
+        Method to choose which parent sentence of the offending clauses to remove.
+        """
+        min = 100000
         removedIndex = 0
         for index in indexList:
+            if index == -1: # skips over the user input sentence
+                continue
             clause = str(to_cnf(self.base[index])).replace(" ","")
-            if max < len(clause):
-                max = len(clause)
+            if min > len(clause):
+                min = len(clause)
                 removedIndex = index
         return removedIndex
 
-
-    def heuristic(self, clause1, clause2, sentence):
-        if sentence.sentence == clause1:
-            return clause2
-        elif sentence.sentence == clause2:
-            return clause1
-        else:
-            clause1Size = len(str(clause1).replace(" ",""))
-            clause2Size = len(str(clause2).replace(" ",""))
-            if clause1Size > clause2Size:
-                return clause1
-            else:
-                return clause2
-                              
     def add(self, sentence):
+        """
+        Adds a sentence to the belief base.
+        Does not add repeated sentences.
+        """
         for s in self.base:
-            if sentence.sentence == s:
-                print(str(sentence.sentence) + " already in belief base!") 
+            if sentence.sentence == s: 
                 return
         self.base.append(sentence.sentence)
